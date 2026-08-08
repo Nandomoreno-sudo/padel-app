@@ -5,6 +5,7 @@ import { Avatar } from "@/components/avatar";
 import { LevelBadge } from "@/components/level-badge";
 import { MatchStatusBadge } from "@/components/match-badges";
 import { MatchActions } from "./match-actions";
+import { AddToCalendarButton } from "./add-to-calendar-button";
 
 const RESULTS_LINK_LABELS: Record<string, string> = {
   full: "Introducir resultado",
@@ -121,6 +122,18 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
         team2Full={team2.length >= 2}
         joinBlockedReason={joinBlockedReason}
       />
+
+      {registration && (
+        <AddToCalendarButton
+          title={`Partido de pádel - ${match.court_name}`}
+          location={match.court_name}
+          startTime={match.start_time}
+          durationMinutes={match.duration_minutes}
+          playerNames={playerList
+            .map((p) => p.profiles?.name)
+            .filter((name): name is string => Boolean(name))}
+        />
+      )}
 
       {RESULTS_LINK_LABELS[match.status] && (
         <div className="border-t border-border pt-4">
