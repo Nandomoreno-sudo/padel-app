@@ -5,6 +5,10 @@ import { requireAdmin } from "@/lib/supabase/dal";
 
 export type CreateMatchState = { error?: string };
 
+const VALID_COURT_NAMES = new Set(
+  Array.from({ length: 10 }, (_, i) => `Pista ${i + 1}`),
+);
+
 export async function createMatch(
   _prevState: CreateMatchState,
   formData: FormData,
@@ -20,6 +24,10 @@ export async function createMatch(
 
   if (!date || !time || !courtName || !durationMinutes) {
     return { error: "Completa todos los campos obligatorios." };
+  }
+
+  if (!VALID_COURT_NAMES.has(courtName)) {
+    return { error: "Selecciona una pista válida (1 a 10)." };
   }
 
   const startTime = new Date(`${date}T${time}`);

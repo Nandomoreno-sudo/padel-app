@@ -6,6 +6,8 @@ import { createMatch, type CreateMatchState } from "../actions";
 
 const initialState: CreateMatchState = {};
 
+const COURT_NUMBERS = Array.from({ length: 10 }, (_, i) => i + 1);
+
 export function MatchForm() {
   const [state, formAction, pending] = useActionState(
     createMatch,
@@ -18,7 +20,27 @@ export function MatchForm() {
         <Field label="Fecha" name="date" type="date" />
         <Field label="Hora" name="time" type="time" />
       </div>
-      <Field label="Pista / club" name="courtName" type="text" />
+      <div className="space-y-1">
+        <label htmlFor="courtName" className="text-sm font-medium">
+          Pista
+        </label>
+        <select
+          id="courtName"
+          name="courtName"
+          required
+          defaultValue=""
+          className="min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-base outline-none focus:border-emerald-500"
+        >
+          <option value="" disabled>
+            Selecciona una pista
+          </option>
+          {COURT_NUMBERS.map((n) => (
+            <option key={n} value={`Pista ${n}`}>
+              Pista {n}
+            </option>
+          ))}
+        </select>
+      </div>
       <Field
         label="Duración (min)"
         name="duration"
