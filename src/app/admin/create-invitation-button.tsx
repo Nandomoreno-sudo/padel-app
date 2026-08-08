@@ -13,7 +13,19 @@ export function CreateInvitationButton() {
   );
 
   return (
-    <form action={formAction} className="space-y-2">
+    <form action={formAction} className="space-y-3">
+      <div className="max-w-xs space-y-1">
+        <label htmlFor="phone" className="text-sm font-medium">
+          Teléfono (opcional)
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="Ej: 34612345678"
+          className="min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-base outline-none focus:border-emerald-500"
+        />
+      </div>
       <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending ? "Generando…" : "Generar invitación"}
       </Button>

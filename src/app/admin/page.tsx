@@ -1,15 +1,13 @@
 import { requireAdmin } from "@/lib/supabase/dal";
-import { getBaseUrl } from "@/lib/site-url";
-import { CopyButton } from "@/components/copy-button";
 import { CreateInvitationButton } from "./create-invitation-button";
+import { WhatsAppInviteButton } from "./whatsapp-invite-button";
 
 export default async function AdminInvitationsPage() {
   const { supabase } = await requireAdmin();
-  const baseUrl = await getBaseUrl();
 
   const { data: invitations } = await supabase
     .from("invitations")
-    .select("id, code, is_used, created_at, used_by")
+    .select("id, code, is_used, created_at, used_by, phone")
     .order("created_at", { ascending: false });
 
   const usedByIds = (invitations ?? [])
@@ -32,8 +30,8 @@ export default async function AdminInvitationsPage() {
       <div className="space-y-3">
         <h1 className="text-2xl font-bold">Invitaciones</h1>
         <p className="text-sm text-muted-foreground">
-          Genera un código de invitación y comparte el enlace de registro por
-          WhatsApp. Cada código solo se puede usar una vez.
+          Genera un código de invitación y envíalo por WhatsApp. Cada código
+          solo se puede usar una vez.
         </p>
         <CreateInvitationButton />
       </div>
@@ -62,17 +60,16 @@ export default async function AdminInvitationsPage() {
               <span>
                 Creada el{" "}
                 {new Date(invitation.created_at).toLocaleDateString("es-ES")}
+                {invitation.phone && ` · ${invitation.phone}`}
               </span>
               {invitation.used_by && (
                 <span>Usada por {namesById.get(invitation.used_by) ?? "—"}</span>
               )}
             </div>
             {!invitation.is_used && (
-              <CopyButton
-                label="Copiar enlace de registro"
-                copiedLabel="¡Enlace copiado!"
-                text={`${baseUrl}/register?code=${invitation.code}`}
-                className="w-full"
+              <WhatsAppInviteButton
+                code={invitation.code}
+                phone={invitation.phone}
               />
             )}
           </div>
