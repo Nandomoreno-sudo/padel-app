@@ -21,7 +21,13 @@ export async function createInvitation(
 
   if (error) {
     console.error("createInvitation failed:", error);
-    return { error: "No se ha podido crear la invitación." };
+    // Se muestra el detalle real (código + mensaje de Postgres) en vez de
+    // un texto genérico: este panel es solo para admins, así que exponer
+    // la causa exacta (p. ej. una columna que falta en la BD) ahorra tener
+    // que ir a mirar los logs del servidor.
+    return {
+      error: `No se ha podido crear la invitación (${error.code}): ${error.message}`,
+    };
   }
 
   revalidatePath("/admin");
