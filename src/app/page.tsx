@@ -26,16 +26,24 @@ export default async function HomePage() {
     matchIds.length > 0
       ? await supabase
           .from("match_players")
-          .select("match_id")
+          .select("match_id, user_id, profiles(name)")
           .in("match_id", matchIds)
       : { data: [] };
 
-  const countByMatch = new Map<string, number>();
-  for (const player of players ?? []) {
-    countByMatch.set(
-      player.match_id,
-      (countByMatch.get(player.match_id) ?? 0) + 1,
-    );
+  type MatchPlayerRow = {
+    match_id: string;
+    user_id: string;
+    profiles: { name: string | null } | null;
+  };
+
+  const playersByMatch = new Map<
+    string,
+    { user_id: string; name: string | null }[]
+  >();
+  for (const player of (players ?? []) as unknown as MatchPlayerRow[]) {
+    const list = playersByMatch.get(player.match_id) ?? [];
+    list.push({ user_id: player.user_id, name: player.profiles?.name ?? null });
+    playersByMatch.set(player.match_id, list);
   }
 
   return (
@@ -47,7 +55,7 @@ export default async function HomePage() {
           <MatchCard
             key={match.id}
             match={match}
-            playerCount={countByMatch.get(match.id) ?? 0}
+            players={playersByMatch.get(match.id) ?? []}
           />
         ))}
 

@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { Avatar } from "./avatar";
 import { SlotsBadge } from "./match-badges";
+
+const MAX_SLOTS = 4;
 
 export function MatchCard({
   match,
-  playerCount,
+  players,
 }: {
   match: {
     id: string;
@@ -14,9 +17,10 @@ export function MatchCard({
     max_level: number | null;
     status: string;
   };
-  playerCount: number;
+  players: { user_id: string; name: string | null }[];
 }) {
   const start = new Date(match.start_time);
+  const openSlots = Math.max(0, MAX_SLOTS - players.length);
 
   return (
     <Link
@@ -39,7 +43,7 @@ export function MatchCard({
             })}
           </p>
         </div>
-        <SlotsBadge status={match.status} playerCount={playerCount} />
+        <SlotsBadge status={match.status} playerCount={players.length} />
       </div>
 
       <div className="mt-3 flex items-center gap-1.5 text-sm text-foreground/90">
@@ -51,6 +55,29 @@ export function MatchCard({
         {match.min_level !== null && match.max_level !== null
           ? `${match.min_level} - ${match.max_level}`
           : "todos"}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {players.map((player) => (
+          <span
+            key={player.user_id}
+            className="flex items-center gap-1.5 rounded-full border border-border bg-background/40 py-1 pl-1 pr-2.5 text-xs font-medium text-foreground/90"
+          >
+            <Avatar name={player.name} seed={player.user_id} size="sm" />
+            {player.name ?? "Sin nombre"}
+          </span>
+        ))}
+        {Array.from({ length: openSlots }).map((_, index) => (
+          <span
+            key={`open-${index}`}
+            className="flex items-center gap-1.5 rounded-full border border-dashed border-border py-1 pl-1 pr-2.5 text-xs font-medium text-muted-foreground/70"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-border text-sm leading-none">
+              +
+            </span>
+            Disponible
+          </span>
+        ))}
       </div>
     </Link>
   );
