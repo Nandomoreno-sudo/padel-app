@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/supabase/dal";
 import { Avatar } from "@/components/avatar";
 import { SlotsBadge } from "@/components/match-badges";
 import { ShareWhatsAppButton } from "./share-whatsapp-button";
+import { ShareWeekWhatsAppButton } from "./share-week-whatsapp-button";
 
 export default async function AdminMatchesPage() {
   const { supabase } = await requireAdmin();
@@ -44,9 +45,16 @@ export default async function AdminMatchesPage() {
     playersByMatch.set(player.match_id, list);
   }
 
+  const now = new Date();
+  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const weekMatches = (matches ?? []).filter((match) => {
+    const start = new Date(match.start_time);
+    return match.status !== "cancelled" && start >= now && start <= weekFromNow;
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Partidos</h1>
         <Link
           href="/admin/matches/new"
@@ -55,6 +63,8 @@ export default async function AdminMatchesPage() {
           Nuevo partido
         </Link>
       </div>
+
+      <ShareWeekWhatsAppButton matches={weekMatches} />
 
       <div className="space-y-4">
         {(matches ?? []).map((match) => {
