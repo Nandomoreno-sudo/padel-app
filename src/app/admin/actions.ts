@@ -20,6 +20,7 @@ export async function createInvitation(
     .insert({ code, created_by: user.id, phone });
 
   if (error) {
+    console.error("createInvitation failed:", error);
     return { error: "No se ha podido crear la invitación." };
   }
 
