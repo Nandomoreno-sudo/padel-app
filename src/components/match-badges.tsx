@@ -24,9 +24,10 @@ export function MatchStatusBadge({ status }: { status: string }) {
   );
 }
 
-// Green = plenty of room, orange = last spot, red = full. Falls back to
-// the general status badge once the match isn't open/full anymore (e.g.
-// pending_result, finished) since "plazas restantes" no longer applies.
+// Green = plenty of room (3-4 free), orange = running low (1-2 free), red =
+// full. Falls back to the general status badge once the match isn't
+// open/full anymore (e.g. pending_result, finished) since "plazas
+// restantes" no longer applies.
 export function SlotsBadge({
   status,
   playerCount,
@@ -48,10 +49,10 @@ export function SlotsBadge({
     );
   }
 
-  if (remaining === 1) {
+  if (remaining <= 2) {
     return (
       <span className="inline-flex items-center whitespace-nowrap rounded-full bg-orange-500/15 px-2.5 py-1 text-xs font-semibold text-orange-300">
-        ¡Última plaza!
+        {remaining === 1 ? "¡Última plaza!" : `${remaining} plazas libres`}
       </span>
     );
   }

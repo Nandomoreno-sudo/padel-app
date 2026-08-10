@@ -63,11 +63,18 @@ export function MatchCard({
         <span>📍</span>
         {match.court_name}
       </div>
-      <div className="mt-1 text-sm text-muted-foreground">
-        {match.duration_minutes} min · Nivel{" "}
-        {match.min_level !== null && match.max_level !== null
-          ? `${match.min_level} - ${match.max_level}`
-          : "todos"}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+          <span aria-hidden>🕒</span>
+          {match.duration_minutes} min
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-300">
+          <span aria-hidden>📊</span>
+          Nivel:{" "}
+          {match.min_level !== null && match.max_level !== null
+            ? `${match.min_level} - ${match.max_level}`
+            : "Todos"}
+        </span>
       </div>
 
       <MiniCourt team1={team1} team2={team2} />
