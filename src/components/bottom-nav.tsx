@@ -2,7 +2,7 @@
 
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import type { SVGProps } from "react";
+import type { CSSProperties, SVGProps } from "react";
 
 function IconWrapper(props: SVGProps<SVGSVGElement>) {
   return (
@@ -61,6 +61,15 @@ const BASE_ITEMS = [
 
 const ADMIN_ITEM = { href: "/admin", label: "Admin", Icon: AdminIcon };
 
+// Long-press on a mobile browser normally selects text and/or pops up an
+// "Open link" context menu; these are the properties that suppress both
+// so the nav behaves like a native tab bar instead of a webpage.
+const NO_CALLOUT_STYLE: CSSProperties = {
+  WebkitTouchCallout: "none",
+  WebkitUserSelect: "none",
+  userSelect: "none",
+};
+
 export function BottomNav({
   isAdmin,
   unreadNotifications = 0,
@@ -72,7 +81,7 @@ export function BottomNav({
   const items = isAdmin ? [...BASE_ITEMS, ADMIN_ITEM] : BASE_ITEMS;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 touch-manipulation border-t border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+    <nav className="fixed inset-x-0 bottom-0 z-50 touch-manipulation select-none border-t border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
       <ul className="mx-auto flex max-w-md items-stretch justify-around pb-[env(safe-area-inset-bottom)]">
         {items.map(({ href, label, Icon }) => {
           const active =
@@ -82,7 +91,8 @@ export function BottomNav({
               <Link
                 href={href}
                 prefetch={true}
-                className={`relative flex min-h-16 touch-manipulation flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
+                style={NO_CALLOUT_STYLE}
+                className={`relative flex min-h-16 touch-manipulation select-none flex-col items-center justify-center gap-1 text-xs font-medium transition-colors active:opacity-70 ${
                   active ? "text-emerald-400" : "text-muted-foreground"
                 }`}
               >
