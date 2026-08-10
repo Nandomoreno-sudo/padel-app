@@ -99,11 +99,7 @@ function MiniCourt({
     <div className="mt-3 rounded-xl border border-white/20 bg-emerald-950/60 p-2">
       <TeamRow players={team1} columns={TEAM1_COLUMNS} />
 
-      <div className="relative -mx-2 my-1.5 flex h-5 items-center justify-center overflow-hidden border-t-2 border-white bg-emerald-950/70 bg-[image:repeating-linear-gradient(45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px)] shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
-        <span className="rounded-full border border-white/30 bg-emerald-950 px-2 py-0.5 text-[9px] font-semibold tracking-wide text-white/80">
-          RED
-        </span>
-      </div>
+      <div className="relative -mx-2 my-1.5 h-5 overflow-hidden border-t-2 border-white bg-emerald-950/70 bg-[image:repeating-linear-gradient(45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px)] shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
 
       <TeamRow players={team2} columns={TEAM2_COLUMNS} />
     </div>
