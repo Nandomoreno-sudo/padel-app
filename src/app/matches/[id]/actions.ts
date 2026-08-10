@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/dal";
 
 export type MatchActionState = { error?: string };
 
@@ -101,6 +103,26 @@ export async function leaveMatch(
 
   revalidatePath(`/matches/${matchId}`);
   return {};
+}
+
+export async function deleteMatch(
+  matchId: string,
+  _prevState: MatchActionState,
+  _formData: FormData,
+): Promise<MatchActionState> {
+  const { supabase } = await requireAdmin();
+
+  const { error } = await supabase.from("matches").delete().eq("id", matchId);
+
+  if (error) {
+    console.error("deleteMatch failed:", error);
+    return {
+      error: `No se ha podido eliminar el partido (${error.code}): ${error.message}`,
+    };
+  }
+
+  revalidatePath("/");
+  redirect("/");
 }
 
 export async function confirmAttendance(

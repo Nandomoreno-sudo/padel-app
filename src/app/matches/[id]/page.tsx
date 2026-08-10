@@ -7,6 +7,7 @@ import { MatchStatusBadge } from "@/components/match-badges";
 import { MatchActions } from "./match-actions";
 import { AddToCalendarButton } from "./add-to-calendar-button";
 import { NotifyWhatsAppButton } from "./notify-whatsapp-button";
+import { DeleteMatchButton } from "./delete-match-button";
 
 const RESULTS_LINK_LABELS: Record<string, string> = {
   full: "Introducir resultado",
@@ -108,13 +109,16 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
       </div>
 
       {profile?.is_admin && (
-        <NotifyWhatsAppButton
-          matchId={match.id}
-          courtName={match.court_name}
-          startTime={match.start_time}
-          playerCount={playerList.length}
-          status={match.status}
-        />
+        <div className="space-y-3">
+          <NotifyWhatsAppButton
+            matchId={match.id}
+            courtName={match.court_name}
+            startTime={match.start_time}
+            playerCount={playerList.length}
+            status={match.status}
+          />
+          <DeleteMatchButton matchId={match.id} />
+        </div>
       )}
 
       <Court team1={team1} team2={team2} />
