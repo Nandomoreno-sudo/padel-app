@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "./avatar";
 import { SlotsBadge } from "./match-badges";
+import { formatMatchDate } from "@/lib/format-date";
 
 const SIDES = ["Derecha", "Revés"] as const;
 type Side = (typeof SIDES)[number];
@@ -45,12 +46,8 @@ export function MatchCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-medium capitalize text-muted-foreground">
-            {start.toLocaleDateString("es-ES", {
-              weekday: "short",
-              day: "2-digit",
-              month: "2-digit",
-            })}
+          <p className="text-sm font-medium text-muted-foreground">
+            {formatMatchDate(start)}
           </p>
           <p className="text-2xl font-bold text-emerald-400">
             {start.toLocaleTimeString("es-ES", {

@@ -8,6 +8,7 @@ import { MatchActions } from "./match-actions";
 import { AddToCalendarButton } from "./add-to-calendar-button";
 import { NotifyWhatsAppButton } from "./notify-whatsapp-button";
 import { DeleteMatchButton } from "./delete-match-button";
+import { formatMatchDate } from "@/lib/format-date";
 
 const RESULTS_LINK_LABELS: Record<string, string> = {
   full: "Introducir resultado",
@@ -88,12 +89,7 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
           <MatchStatusBadge status={match.status} />
         </div>
         <p className="text-sm text-muted-foreground">
-          {startDate.toLocaleDateString("es-ES", {
-            weekday: "long",
-            day: "2-digit",
-            month: "2-digit",
-          })}{" "}
-          ·{" "}
+          {formatMatchDate(startDate)} ·{" "}
           {startDate.toLocaleTimeString("es-ES", {
             hour: "2-digit",
             minute: "2-digit",
