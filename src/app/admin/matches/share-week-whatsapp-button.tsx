@@ -12,7 +12,13 @@ function getShareOrigin() {
 export function ShareWeekWhatsAppButton({
   matches,
 }: {
-  matches: { id: string; court_name: string; start_time: string }[];
+  matches: {
+    id: string;
+    court_name: string;
+    start_time: string;
+    min_level: number | null;
+    max_level: number | null;
+  }[];
 }) {
   function handleClick() {
     const origin = getShareOrigin();
@@ -27,8 +33,12 @@ export function ShareWeekWhatsAppButton({
         hour: "2-digit",
         minute: "2-digit",
       });
+      const levelRange =
+        match.min_level !== null && match.max_level !== null
+          ? `${match.min_level} - ${match.max_level}`
+          : "Todos los niveles";
       return [
-        `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} • ${match.court_name}`,
+        `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${match.court_name} | ${WHATSAPP_EMOJI.chart} Nivel: ${levelRange}`,
         `- ${origin}/matches/${match.id}`,
       ].join("\n");
     });
