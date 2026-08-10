@@ -136,7 +136,7 @@ function QuadrantPlayer({ player }: { player: MatchCardPlayer }) {
   return (
     <div className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-md bg-white/10 p-1.5 text-center">
       <Avatar name={player.name} seed={player.user_id} size="sm" />
-      <p className="line-clamp-1 w-full text-[11px] font-medium leading-none text-foreground/90">
+      <p className="line-clamp-1 w-full text-xs font-medium leading-none text-foreground/90">
         {firstName(player.name)}
       </p>
     </div>
