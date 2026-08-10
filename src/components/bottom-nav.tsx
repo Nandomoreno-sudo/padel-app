@@ -44,14 +44,30 @@ function AdminIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function BellIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconWrapper {...props}>
+      <path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5Z" />
+      <path d="M10 19a2 2 0 0 0 4 0" />
+    </IconWrapper>
+  );
+}
+
 const BASE_ITEMS = [
   { href: "/", label: "Partidos", Icon: MatchesIcon },
+  { href: "/notifications", label: "Avisos", Icon: BellIcon },
   { href: "/profile", label: "Perfil", Icon: ProfileIcon },
 ];
 
 const ADMIN_ITEM = { href: "/admin", label: "Admin", Icon: AdminIcon };
 
-export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
+export function BottomNav({
+  isAdmin,
+  unreadNotifications = 0,
+}: {
+  isAdmin: boolean;
+  unreadNotifications?: number;
+}) {
   const pathname = usePathname();
   const items = isAdmin ? [...BASE_ITEMS, ADMIN_ITEM] : BASE_ITEMS;
 
@@ -65,11 +81,18 @@ export function BottomNav({ isAdmin }: { isAdmin: boolean }) {
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
+                className={`relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
                   active ? "text-emerald-400" : "text-muted-foreground"
                 }`}
               >
-                <Icon className="h-6 w-6" />
+                <span className="relative">
+                  <Icon className="h-6 w-6" />
+                  {href === "/notifications" && unreadNotifications > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    </span>
+                  )}
+                </span>
                 {label}
               </Link>
             </li>

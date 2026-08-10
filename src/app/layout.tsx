@@ -28,13 +28,18 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   let isAdmin = false;
+  let unreadNotifications = 0;
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase.from("profiles").select("is_admin").eq("id", user.id).single(),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false),
+    ]);
     isAdmin = Boolean(profile?.is_admin);
+    unreadNotifications = count ?? 0;
   }
 
   return (
@@ -51,7 +56,9 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         {children}
-        {user && <BottomNav isAdmin={isAdmin} />}
+        {user && (
+          <BottomNav isAdmin={isAdmin} unreadNotifications={unreadNotifications} />
+        )}
       </body>
     </html>
   );

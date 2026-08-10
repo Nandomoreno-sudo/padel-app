@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/dal";
+import { formatMatchDate } from "@/lib/format-date";
 
 export type MatchActionState = { error?: string };
 
@@ -28,10 +29,10 @@ export async function joinMatch(
 
   const [{ data: profile }, { data: match }, { data: existingPlayers }] =
     await Promise.all([
-      supabase.from("profiles").select("level").eq("id", user.id).single(),
+      supabase.from("profiles").select("name, level").eq("id", user.id).single(),
       supabase
         .from("matches")
-        .select("status, min_level, max_level")
+        .select("status, min_level, max_level, start_time")
         .eq("id", matchId)
         .single(),
       supabase
@@ -72,6 +73,23 @@ export async function joinMatch(
 
   if (error) {
     return { error: "No se ha podido completar la inscripción." };
+  }
+
+  const remaining = Math.max(0, 4 - (players.length + 1));
+  const spotsText =
+    remaining === 0
+      ? "El partido está completo."
+      : remaining === 1
+        ? "Queda 1 plaza libre."
+        : `Quedan ${remaining} plazas libres.`;
+  const message = `🎾 ¡${profile?.name ?? "Un jugador"} se ha unido a tu partido del ${formatMatchDate(match.start_time)}! ${spotsText}`;
+
+  const { error: notifyError } = await supabase.rpc("notify_match_players", {
+    p_match_id: matchId,
+    p_message: message,
+  });
+  if (notifyError) {
+    console.error("notify_match_players failed:", notifyError);
   }
 
   revalidatePath(`/matches/${matchId}`);
