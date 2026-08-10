@@ -28,8 +28,8 @@ export function ShareWeekWhatsAppButton({
         minute: "2-digit",
       });
       return [
-        `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${match.court_name}`,
-        `${WHATSAPP_EMOJI.link} ${origin}/matches/${match.id}`,
+        `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} • ${match.court_name}`,
+        `- ${origin}/matches/${match.id}`,
       ].join("\n");
     });
 

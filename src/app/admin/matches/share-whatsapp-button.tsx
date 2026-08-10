@@ -43,9 +43,9 @@ export function ShareWhatsAppButton({
 
     return [
       `${WHATSAPP_EMOJI.tennis} NUEVO PARTIDO DISPONIBLE`,
-      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${courtName}`,
-      `${WHATSAPP_EMOJI.chart} Nivel: ${levelRange}`,
-      `${WHATSAPP_EMOJI.link} Apúntate aquí: ${matchUrl}`,
+      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} • ${courtName}`,
+      `- Nivel: ${levelRange}`,
+      `- Apúntate aquí: ${matchUrl}`,
     ].join("\n");
   }
 

@@ -39,16 +39,16 @@ export function NotifyWhatsAppButton({
 
     const statusLine =
       status === "open" || status === "full"
-        ? `${WHATSAPP_EMOJI.greenCircle} Plazas libres: ${Math.max(0, MAX_SLOTS - playerCount)}/${MAX_SLOTS}`
-        : `${WHATSAPP_EMOJI.info} Estado: ${MATCH_STATUS_LABELS[status] ?? status}`;
+        ? `- Plazas libres: ${Math.max(0, MAX_SLOTS - playerCount)}/${MAX_SLOTS}`
+        : `- Estado: ${MATCH_STATUS_LABELS[status] ?? status}`;
 
     const matchUrl = `${getShareOrigin()}/matches/${matchId}`;
 
     const message = [
-      `${WHATSAPP_EMOJI.megaphone} Actualización del partido de pádel`,
-      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${courtName}`,
+      `${WHATSAPP_EMOJI.tennis} Actualización del partido de pádel`,
+      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} • ${courtName}`,
       statusLine,
-      `${WHATSAPP_EMOJI.link} Ver detalles: ${matchUrl}`,
+      `- Ver detalles: ${matchUrl}`,
     ].join("\n");
 
     window.open(
