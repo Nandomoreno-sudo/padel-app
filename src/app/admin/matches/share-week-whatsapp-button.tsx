@@ -1,5 +1,7 @@
 "use client";
 
+import { WHATSAPP_EMOJI } from "@/lib/whatsapp-emoji";
+
 // NEXT_PUBLIC_APP_URL lets you pin the link to a canonical public domain;
 // falls back to window.location.origin. Same approach as the other
 // WhatsApp share buttons in the app.
@@ -26,14 +28,16 @@ export function ShareWeekWhatsAppButton({
         minute: "2-digit",
       });
       return [
-        `📅 ${formattedDate} - ${formattedTime} | 📍 ${match.court_name}`,
-        `👉 ${origin}/matches/${match.id}`,
+        `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${match.court_name}`,
+        `${WHATSAPP_EMOJI.link} ${origin}/matches/${match.id}`,
       ].join("\n");
     });
 
-    const message = ["🎾 PARTIDOS DE LA SEMANA", "", entries.join("\n\n")].join(
-      "\n",
-    );
+    const message = [
+      `${WHATSAPP_EMOJI.tennis} PARTIDOS DE LA SEMANA`,
+      "",
+      entries.join("\n\n"),
+    ].join("\n");
 
     window.open(
       `https://wa.me/?text=${encodeURIComponent(message)}`,

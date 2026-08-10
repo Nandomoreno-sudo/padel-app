@@ -1,6 +1,7 @@
 "use client";
 
 import { MATCH_STATUS_LABELS } from "@/components/match-badges";
+import { WHATSAPP_EMOJI } from "@/lib/whatsapp-emoji";
 
 // NEXT_PUBLIC_APP_URL lets you pin the link to a canonical public domain;
 // falls back to window.location.origin. Same approach as the other
@@ -38,16 +39,16 @@ export function NotifyWhatsAppButton({
 
     const statusLine =
       status === "open" || status === "full"
-        ? `🟢 Plazas libres: ${Math.max(0, MAX_SLOTS - playerCount)}/${MAX_SLOTS}`
-        : `ℹ️ Estado: ${MATCH_STATUS_LABELS[status] ?? status}`;
+        ? `${WHATSAPP_EMOJI.greenCircle} Plazas libres: ${Math.max(0, MAX_SLOTS - playerCount)}/${MAX_SLOTS}`
+        : `${WHATSAPP_EMOJI.info} Estado: ${MATCH_STATUS_LABELS[status] ?? status}`;
 
     const matchUrl = `${getShareOrigin()}/matches/${matchId}`;
 
     const message = [
-      "📢 Actualización del partido de pádel",
-      `📅 ${formattedDate} - ${formattedTime} | 📍 ${courtName}`,
+      `${WHATSAPP_EMOJI.megaphone} Actualización del partido de pádel`,
+      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${courtName}`,
       statusLine,
-      `👉 Ver detalles: ${matchUrl}`,
+      `${WHATSAPP_EMOJI.link} Ver detalles: ${matchUrl}`,
     ].join("\n");
 
     window.open(

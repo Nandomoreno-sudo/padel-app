@@ -1,5 +1,7 @@
 "use client";
 
+import { WHATSAPP_EMOJI } from "@/lib/whatsapp-emoji";
+
 // NEXT_PUBLIC_APP_URL lets you pin the link to a canonical public domain
 // (useful behind proxies/CDNs where the browser's origin may not be the
 // public one). Falls back to window.location.origin, which already tracks
@@ -40,10 +42,10 @@ export function ShareWhatsAppButton({
     const matchUrl = `${getShareOrigin()}/matches/${matchId}`;
 
     return [
-      "🎾 NUEVO PARTIDO DISPONIBLE",
-      `📅 ${formattedDate} - ${formattedTime} | 📍 ${courtName}`,
-      `📊 Nivel: ${levelRange}`,
-      `👇 Apúntate aquí: ${matchUrl}`,
+      `${WHATSAPP_EMOJI.tennis} NUEVO PARTIDO DISPONIBLE`,
+      `${WHATSAPP_EMOJI.calendar} ${formattedDate} - ${formattedTime} | ${WHATSAPP_EMOJI.pin} ${courtName}`,
+      `${WHATSAPP_EMOJI.chart} Nivel: ${levelRange}`,
+      `${WHATSAPP_EMOJI.link} Apúntate aquí: ${matchUrl}`,
     ].join("\n");
   }
 
