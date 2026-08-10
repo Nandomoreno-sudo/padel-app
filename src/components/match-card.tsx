@@ -59,16 +59,18 @@ export function MatchCard({
         <SlotsBadge status={match.status} playerCount={players.length} />
       </div>
 
-      <div className="mt-3 flex items-center gap-1.5 text-sm text-foreground/90">
-        <span>📍</span>
-        {match.court_name}
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+      <div className="mt-3 flex flex-row flex-wrap items-center gap-3 text-sm">
+        <span className="inline-flex items-center gap-1.5 text-foreground/90">
+          <span aria-hidden>📍</span>
+          {match.court_name}
+        </span>
+        <span className="text-muted-foreground">•</span>
+        <span className="inline-flex items-center gap-1 text-muted-foreground">
           <span aria-hidden>🕒</span>
           {match.duration_minutes} min
         </span>
-        <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-300">
+        <span className="text-muted-foreground">•</span>
+        <span className="inline-flex items-center gap-1 font-semibold text-sky-300">
           <span aria-hidden>📊</span>
           Nivel:{" "}
           {match.min_level !== null && match.max_level !== null
@@ -96,10 +98,10 @@ function MiniCourt({
   team2: SidedPlayer[];
 }) {
   return (
-    <div className="mt-3 rounded-xl border border-white/20 bg-emerald-950/60 p-2">
+    <div className="mt-3 rounded-xl border border-white/20 bg-emerald-950/60 p-3">
       <TeamRow players={team1} columns={TEAM1_COLUMNS} />
 
-      <div className="relative -mx-2 my-1.5 h-5 overflow-hidden border-t-2 border-white bg-emerald-950/70 bg-[image:repeating-linear-gradient(45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px)] shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
+      <div className="relative -mx-3 my-2 h-6 overflow-hidden border-t-2 border-white bg-emerald-950/70 bg-[image:repeating-linear-gradient(45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px),repeating-linear-gradient(-45deg,rgba(255,255,255,0.22)_0px,rgba(255,255,255,0.22)_1px,transparent_1px,transparent_5px)] shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
 
       <TeamRow players={team2} columns={TEAM2_COLUMNS} />
     </div>
@@ -134,9 +136,9 @@ function TeamRow({
 
 function QuadrantPlayer({ player }: { player: MatchCardPlayer }) {
   return (
-    <div className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-md bg-white/10 p-1.5 text-center">
-      <Avatar name={player.name} seed={player.user_id} size="sm" />
-      <p className="line-clamp-1 w-full text-xs font-medium leading-none text-foreground/90">
+    <div className="flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-md bg-white/10 p-2 text-center">
+      <Avatar name={player.name} seed={player.user_id} size="md" />
+      <p className="line-clamp-1 w-full text-sm font-medium leading-none text-foreground/90">
         {firstName(player.name)}
       </p>
     </div>
@@ -145,11 +147,11 @@ function QuadrantPlayer({ player }: { player: MatchCardPlayer }) {
 
 function QuadrantEmpty({ side }: { side: Side }) {
   return (
-    <div className="flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed border-white/20 p-1.5 text-center text-white/50 transition-colors hover:border-emerald-400/50 hover:text-emerald-300/70">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-current text-xs leading-none">
+    <div className="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-white/20 p-2 text-center text-white/50 transition-colors hover:border-emerald-400/50 hover:text-emerald-300/70">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-current text-sm leading-none">
         +
       </span>
-      <p className="text-[10px] leading-none">Libre ({side})</p>
+      <p className="text-xs leading-none">Libre ({side})</p>
     </div>
   );
 }

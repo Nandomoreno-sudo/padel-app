@@ -33,6 +33,32 @@ export function NotificationsListener({ userId }: { userId: string }) {
   const router = useRouter();
   const audioCtxRef = useRef<AudioContext | null>(null);
 
+  // iOS/Safari only allows creating/resuming an AudioContext from inside a
+  // user-gesture handler, and the realtime INSERT event that triggers the
+  // beep arrives asynchronously (never as a direct gesture). So the first
+  // tap/click anywhere primes the context ahead of time — by the time a
+  // notification arrives, it's already unlocked.
+  useEffect(() => {
+    const unlockAudio = () => {
+      try {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new AudioContext();
+        }
+        if (audioCtxRef.current.state === "suspended") {
+          audioCtxRef.current.resume().catch(() => {});
+        }
+      } catch {
+        // Unsupported browser: the beep will just no-op later.
+      }
+    };
+    window.addEventListener("touchstart", unlockAudio, { once: true });
+    window.addEventListener("click", unlockAudio, { once: true });
+    return () => {
+      window.removeEventListener("touchstart", unlockAudio);
+      window.removeEventListener("click", unlockAudio);
+    };
+  }, []);
+
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
