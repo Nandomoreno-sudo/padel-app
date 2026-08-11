@@ -13,12 +13,16 @@ export default async function HomePage() {
     redirect("/login");
   }
 
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   const { data: matches } = await supabase
     .from("matches")
     .select(
       "id, court_name, start_time, duration_minutes, min_level, max_level, status",
     )
     .neq("status", "cancelled")
+    .gte("start_time", todayStart.toISOString())
     .order("start_time", { ascending: true });
 
   const matchIds = (matches ?? []).map((match) => match.id);
