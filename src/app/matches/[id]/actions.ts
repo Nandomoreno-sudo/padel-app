@@ -122,6 +122,7 @@ export async function joinMatch(
   }
 
   revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/");
   return {};
 }
 
@@ -149,6 +150,7 @@ export async function leaveMatch(
   }
 
   revalidatePath(`/matches/${matchId}`);
+  revalidatePath("/");
   return {};
 }
 

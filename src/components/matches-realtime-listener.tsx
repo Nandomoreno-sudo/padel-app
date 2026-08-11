@@ -15,12 +15,7 @@ export function MatchesRealtimeListener() {
       .channel("matches-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "match_players" },
-        () => router.refresh(),
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "match_players" },
+        { event: "*", schema: "public", table: "match_players" },
         () => router.refresh(),
       )
       .subscribe();
