@@ -19,6 +19,13 @@ export async function joinMatch(
     return { error: "Selecciona un equipo." };
   }
 
+  const positionRaw = formData.get("position");
+  const position =
+    positionRaw === "derecha" || positionRaw === "reves" ? positionRaw : null;
+  if (!position) {
+    return { error: "Selecciona una posición (Derecha o Revés)." };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -37,7 +44,7 @@ export async function joinMatch(
         .single(),
       supabase
         .from("match_players")
-        .select("user_id, team")
+        .select("user_id, team, position")
         .eq("match_id", matchId),
     ]);
 
@@ -55,6 +62,11 @@ export async function joinMatch(
   if (players.filter((p) => p.team === team).length >= 2) {
     return { error: `El equipo ${team} ya está completo.` };
   }
+  if (players.some((p) => p.team === team && p.position === position)) {
+    return {
+      error: `La posición de ${position === "derecha" ? "Derecha" : "Revés"} del equipo ${team} ya está ocupada.`,
+    };
+  }
 
   const level = profile?.level ?? null;
   if (
@@ -69,6 +81,7 @@ export async function joinMatch(
     match_id: matchId,
     user_id: user.id,
     team,
+    position,
   });
 
   if (error) {

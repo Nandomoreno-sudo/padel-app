@@ -26,21 +26,24 @@ export default async function HomePage() {
     matchIds.length > 0
       ? await supabase
           .from("match_players")
-          .select("match_id, user_id, team, profiles(name)")
+          .select("match_id, user_id, team, position, profiles(name)")
           .in("match_id", matchIds)
           .order("registered_at", { ascending: true })
       : { data: [] };
+
+  type Position = "derecha" | "reves";
 
   type MatchPlayerRow = {
     match_id: string;
     user_id: string;
     team: 1 | 2;
+    position: Position;
     profiles: { name: string | null } | null;
   };
 
   const playersByMatch = new Map<
     string,
-    { user_id: string; name: string | null; team: 1 | 2 }[]
+    { user_id: string; name: string | null; team: 1 | 2; position: Position }[]
   >();
   for (const player of (players ?? []) as unknown as MatchPlayerRow[]) {
     const list = playersByMatch.get(player.match_id) ?? [];
@@ -48,6 +51,7 @@ export default async function HomePage() {
       user_id: player.user_id,
       name: player.profiles?.name ?? null,
       team: player.team,
+      position: player.position,
     });
     playersByMatch.set(player.match_id, list);
   }
