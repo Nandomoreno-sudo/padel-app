@@ -103,7 +103,7 @@ export async function joinMatch(
     p_message: message,
   });
   if (notifyError) {
-    console.error("notify_match_players failed:", notifyError);
+    console.error("[joinMatch] notify_match_players failed:", notifyError);
   }
 
   const { data: pushSubs, error: pushSubsError } = await supabase.rpc(
@@ -111,18 +111,37 @@ export async function joinMatch(
     { p_match_id: matchId, p_exclude_user_id: user.id },
   );
   if (pushSubsError) {
-    console.error("get_match_push_subscriptions failed:", pushSubsError);
-  } else if (pushSubs && pushSubs.length > 0) {
+    console.error(
+      "[joinMatch] get_match_push_subscriptions failed:",
+      matchId,
+      pushSubsError,
+    );
+  } else if (!pushSubs || pushSubs.length === 0) {
+    console.log(
+      "[joinMatch] no push subscriptions to notify for match",
+      matchId,
+    );
+  } else {
+    console.log(
+      `[joinMatch] sending push to ${pushSubs.length} subscription(s) for match`,
+      matchId,
+    );
     const staleEndpoints = await sendPushNotifications(pushSubs, {
       title: "🎾 Nuevo jugador en tu partido",
       body: message,
       url: `/matches/${matchId}`,
     });
+    if (staleEndpoints.length > 0) {
+      console.log(
+        `[joinMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
+      );
+    }
     await deleteStaleSubscriptions(supabase, staleEndpoints);
   }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/");
+  revalidatePath("/matches");
   return {};
 }
 
@@ -139,6 +158,27 @@ export async function leaveMatch(
     return { error: "Debes iniciar sesión." };
   }
 
+  // get_match_push_subscriptions checks that the caller is still a member
+  // of match_players, so it (and the profile/match lookups used to build
+  // the push message) must run *before* the delete below removes that
+  // membership — otherwise the RPC rejects the call and no push goes out.
+  const [{ data: profile }, { data: match }, { data: pushSubs, error: pushSubsError }] =
+    await Promise.all([
+      supabase.from("profiles").select("name").eq("id", user.id).single(),
+      supabase.from("matches").select("start_time").eq("id", matchId).single(),
+      supabase.rpc("get_match_push_subscriptions", {
+        p_match_id: matchId,
+        p_exclude_user_id: user.id,
+      }),
+    ]);
+  if (pushSubsError) {
+    console.error(
+      "[leaveMatch] get_match_push_subscriptions failed:",
+      matchId,
+      pushSubsError,
+    );
+  }
+
   const { error } = await supabase
     .from("match_players")
     .delete()
@@ -149,8 +189,38 @@ export async function leaveMatch(
     return { error: "No se ha podido cancelar la inscripción." };
   }
 
+  const message = `🎾 ${profile?.name ?? "Un jugador"} ha cancelado su inscripción${
+    match ? ` a tu partido del ${formatMatchDate(match.start_time)}` : " a tu partido"
+  }.`;
+
+  if (pushSubsError) {
+    // already logged above; nothing to send.
+  } else if (!pushSubs || pushSubs.length === 0) {
+    console.log(
+      "[leaveMatch] no push subscriptions to notify for match",
+      matchId,
+    );
+  } else {
+    console.log(
+      `[leaveMatch] sending push to ${pushSubs.length} subscription(s) for match`,
+      matchId,
+    );
+    const staleEndpoints = await sendPushNotifications(pushSubs, {
+      title: "🎾 Un jugador se ha bajado del partido",
+      body: message,
+      url: `/matches/${matchId}`,
+    });
+    if (staleEndpoints.length > 0) {
+      console.log(
+        `[leaveMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
+      );
+    }
+    await deleteStaleSubscriptions(supabase, staleEndpoints);
+  }
+
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/");
+  revalidatePath("/matches");
   return {};
 }
 
