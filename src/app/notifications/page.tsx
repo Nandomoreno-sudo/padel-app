@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { PushSubscribeButton } from "@/components/push-subscribe-button";
 import { markAllNotificationsRead } from "./actions";
 
 export default async function NotificationsPage() {
@@ -35,6 +36,8 @@ export default async function NotificationsPage() {
           </form>
         )}
       </div>
+
+      <PushSubscribeButton />
 
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">

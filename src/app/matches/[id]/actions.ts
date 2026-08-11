@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/dal";
 import { formatMatchDate } from "@/lib/format-date";
+import { sendPushNotifications, deleteStaleSubscriptions } from "@/lib/push/send";
 
 export type MatchActionState = { error?: string };
 
@@ -103,6 +104,21 @@ export async function joinMatch(
   });
   if (notifyError) {
     console.error("notify_match_players failed:", notifyError);
+  }
+
+  const { data: pushSubs, error: pushSubsError } = await supabase.rpc(
+    "get_match_push_subscriptions",
+    { p_match_id: matchId, p_exclude_user_id: user.id },
+  );
+  if (pushSubsError) {
+    console.error("get_match_push_subscriptions failed:", pushSubsError);
+  } else if (pushSubs && pushSubs.length > 0) {
+    const staleEndpoints = await sendPushNotifications(pushSubs, {
+      title: "🎾 Nuevo jugador en tu partido",
+      body: message,
+      url: `/matches/${matchId}`,
+    });
+    await deleteStaleSubscriptions(supabase, staleEndpoints);
   }
 
   revalidatePath(`/matches/${matchId}`);
