@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MatchCard } from "@/components/match-card";
+import { MatchesRealtimeListener } from "@/components/matches-realtime-listener";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -58,6 +59,7 @@ export default async function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-md flex-1 space-y-4 px-4 py-6 pb-8">
+      <MatchesRealtimeListener />
       <h1 className="text-2xl font-bold">Partidos</h1>
 
       <div className="space-y-3">
