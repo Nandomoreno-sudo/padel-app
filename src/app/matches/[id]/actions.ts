@@ -106,37 +106,44 @@ export async function joinMatch(
     console.error("[joinMatch] notify_match_players failed:", notifyError);
   }
 
-  const { data: pushSubs, error: pushSubsError } = await supabase.rpc(
-    "get_match_push_subscriptions",
-    { p_match_id: matchId, p_exclude_user_id: user.id },
-  );
-  if (pushSubsError) {
-    console.error(
-      "[joinMatch] get_match_push_subscriptions failed:",
-      matchId,
-      pushSubsError,
-    );
-  } else if (!pushSubs || pushSubs.length === 0) {
-    console.log(
-      "[joinMatch] no push subscriptions to notify for match",
-      matchId,
-    );
+  // "Other players already in the match" is exactly the `players` list
+  // fetched above (before this insert) — no need to re-query it.
+  const targetUserIds = players.map((p) => p.user_id);
+  if (targetUserIds.length === 0) {
+    console.log("[joinMatch] no other players to notify for match", matchId);
   } else {
-    console.log(
-      `[joinMatch] sending push to ${pushSubs.length} subscription(s) for match`,
-      matchId,
+    const { data: pushSubs, error: pushSubsError } = await supabase.rpc(
+      "get_match_push_subscriptions",
+      { p_match_id: matchId, p_user_ids: targetUserIds },
     );
-    const staleEndpoints = await sendPushNotifications(pushSubs, {
-      title: "🎾 Nuevo jugador en tu partido",
-      body: message,
-      url: `/matches/${matchId}`,
-    });
-    if (staleEndpoints.length > 0) {
-      console.log(
-        `[joinMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
+    if (pushSubsError) {
+      console.error(
+        "[joinMatch] get_match_push_subscriptions failed:",
+        matchId,
+        pushSubsError,
       );
+    } else if (!pushSubs || pushSubs.length === 0) {
+      console.log(
+        "[joinMatch] no push subscriptions to notify for match",
+        matchId,
+      );
+    } else {
+      console.log(
+        `[joinMatch] sending push to ${pushSubs.length} subscription(s) for match`,
+        matchId,
+      );
+      const staleEndpoints = await sendPushNotifications(pushSubs, {
+        title: "🎾 Nuevo jugador en tu partido",
+        body: message,
+        url: `/matches/${matchId}`,
+      });
+      if (staleEndpoints.length > 0) {
+        console.log(
+          `[joinMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
+        );
+      }
+      await deleteStaleSubscriptions(supabase, staleEndpoints);
     }
-    await deleteStaleSubscriptions(supabase, staleEndpoints);
   }
 
   revalidatePath(`/matches/${matchId}`);
@@ -159,24 +166,45 @@ export async function leaveMatch(
   }
 
   // get_match_push_subscriptions checks that the caller is still a member
-  // of match_players, so it (and the profile/match lookups used to build
-  // the push message) must run *before* the delete below removes that
-  // membership — otherwise the RPC rejects the call and no push goes out.
-  const [{ data: profile }, { data: match }, { data: pushSubs, error: pushSubsError }] =
+  // of match_players, so it (and the profile/match/other-players lookups
+  // used to build and target the push) must run *before* the delete below
+  // removes that membership — otherwise the RPC rejects the call and no
+  // push goes out.
+  const [{ data: profile }, { data: match }, { data: otherPlayers, error: otherPlayersError }] =
     await Promise.all([
       supabase.from("profiles").select("name").eq("id", user.id).single(),
       supabase.from("matches").select("start_time").eq("id", matchId).single(),
-      supabase.rpc("get_match_push_subscriptions", {
-        p_match_id: matchId,
-        p_exclude_user_id: user.id,
-      }),
+      supabase
+        .from("match_players")
+        .select("user_id")
+        .eq("match_id", matchId)
+        .neq("user_id", user.id),
     ]);
-  if (pushSubsError) {
+  if (otherPlayersError) {
     console.error(
-      "[leaveMatch] get_match_push_subscriptions failed:",
+      "[leaveMatch] fetching other players failed:",
       matchId,
-      pushSubsError,
+      otherPlayersError,
     );
+  }
+
+  const targetUserIds = otherPlayers?.map((p) => p.user_id) ?? [];
+  let pushSubs: { endpoint: string; p256dh: string; auth: string }[] | null = null;
+  let pushSubsError: unknown = null;
+  if (targetUserIds.length > 0) {
+    const result = await supabase.rpc("get_match_push_subscriptions", {
+      p_match_id: matchId,
+      p_user_ids: targetUserIds,
+    });
+    pushSubs = result.data;
+    pushSubsError = result.error;
+    if (pushSubsError) {
+      console.error(
+        "[leaveMatch] get_match_push_subscriptions failed:",
+        matchId,
+        pushSubsError,
+      );
+    }
   }
 
   const { error } = await supabase
@@ -193,7 +221,9 @@ export async function leaveMatch(
     match ? ` a tu partido del ${formatMatchDate(match.start_time)}` : " a tu partido"
   }.`;
 
-  if (pushSubsError) {
+  if (targetUserIds.length === 0) {
+    console.log("[leaveMatch] no other players to notify for match", matchId);
+  } else if (pushSubsError) {
     // already logged above; nothing to send.
   } else if (!pushSubs || pushSubs.length === 0) {
     console.log(
