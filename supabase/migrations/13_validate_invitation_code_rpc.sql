@@ -5,6 +5,10 @@
 -- saving new user", losing the real reason. SECURITY DEFINER so it can read
 -- `invitations` despite its RLS policies requiring an authenticated role
 -- (there's no session yet at this point in the sign-up flow).
+--
+-- Filters on invitations.is_used (boolean, not null, default false) —
+-- confirmed 2026-08-15 against the live schema via information_schema, the
+-- table has no used_at column.
 create or replace function public.validate_invitation_code(p_code text)
 returns text
 language plpgsql
@@ -13,9 +17,9 @@ set search_path = public
 stable
 as $$
 declare
-  v_is_used boolean;
+  v_is_available boolean;
 begin
-  select is_used into v_is_used
+  select (is_used = false) into v_is_available
   from public.invitations
   where code = p_code;
 
@@ -23,7 +27,7 @@ begin
     return 'invalid';
   end if;
 
-  if v_is_used then
+  if not v_is_available then
     return 'used';
   end if;
 
