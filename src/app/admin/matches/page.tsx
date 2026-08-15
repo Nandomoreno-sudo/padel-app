@@ -56,12 +56,20 @@ export default async function AdminMatchesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Partidos</h1>
-        <Link
-          href="/admin/matches/new"
-          className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-500 px-5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400"
-        >
-          Nuevo partido
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/matches/week"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-border px-5 text-sm font-semibold text-foreground hover:bg-surface-hover"
+          >
+            Duplicar semana anterior
+          </Link>
+          <Link
+            href="/admin/matches/new"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-500 px-5 text-sm font-semibold text-emerald-950 hover:bg-emerald-400"
+          >
+            Nuevo partido
+          </Link>
+        </div>
       </div>
 
       <ShareWeekWhatsAppButton matches={weekMatches} />

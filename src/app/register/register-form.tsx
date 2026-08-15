@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { register, type RegisterActionState } from "./actions";
+import { LEVEL_OPTIONS } from "./level-options";
 
 const initialState: RegisterActionState = {};
 
@@ -38,6 +39,27 @@ export function RegisterForm({ invitationCode }: { invitationCode: string }) {
           type="password"
           autoComplete="new-password"
         />
+        <div className="space-y-1">
+          <label htmlFor="level" className="text-sm font-medium">
+            Nivel de juego
+          </label>
+          <select
+            id="level"
+            name="level"
+            required
+            defaultValue=""
+            className="min-h-12 w-full rounded-xl border border-border bg-surface px-4 text-base outline-none focus:border-emerald-500"
+          >
+            <option value="" disabled>
+              Selecciona tu nivel
+            </option>
+            {LEVEL_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "Creando cuenta…" : "Crear cuenta"}
         </Button>

@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/dal";
+import { normalizePhone } from "@/lib/phone";
 
 export type CreateInvitationState = { error?: string };
 
@@ -12,7 +13,8 @@ export async function createInvitation(
 ): Promise<CreateInvitationState> {
   const { user, supabase } = await requireAdmin();
 
-  const phone = formData.get("phone")?.toString().trim() || null;
+  const rawPhone = formData.get("phone")?.toString().trim() || null;
+  const phone = rawPhone ? normalizePhone(rawPhone) : null;
   const code = randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
 
   const { error } = await supabase

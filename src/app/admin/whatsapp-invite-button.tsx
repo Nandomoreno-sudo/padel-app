@@ -1,5 +1,7 @@
 "use client";
 
+import { normalizePhone } from "@/lib/phone";
+
 // NEXT_PUBLIC_APP_URL lets you pin the link to a canonical public domain;
 // falls back to window.location.origin (localhost in dev, the real domain
 // once deployed). Same approach as the match-sharing WhatsApp button.
@@ -21,7 +23,7 @@ export function WhatsAppInviteButton({
     // wa.me needs digits only (country code + number, no "+", spaces or
     // dashes). If no phone was captured, omit the number entirely so
     // WhatsApp opens its own contact picker instead.
-    const digitsOnly = phone?.replace(/\D/g, "") ?? "";
+    const digitsOnly = phone ? normalizePhone(phone) : "";
     const base = digitsOnly
       ? `https://wa.me/${digitsOnly}`
       : "https://wa.me/";
