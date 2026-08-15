@@ -26,11 +26,14 @@ type AdminMatchPlayer = {
 export default async function AdminMatchesPage() {
   const { supabase } = await requireAdmin();
 
+  const todayStart = getMadridDayStart();
+
   const { data: matches } = await supabase
     .from("matches")
     .select(
       "id, court_name, start_time, duration_minutes, min_level, max_level, status",
     )
+    .gte("start_time", todayStart.toISOString())
     .order("start_time", { ascending: true });
 
   const matchIds = (matches ?? []).map((match) => match.id);
@@ -70,19 +73,17 @@ export default async function AdminMatchesPage() {
     return match.status !== "cancelled" && start >= now && start <= weekFromNow;
   });
 
-  const todayStart = getMadridDayStart(now);
-  const upcomingMatches = (matches ?? []).filter(
-    (match) => new Date(match.start_time) >= todayStart,
-  );
-  const pastMatches = (matches ?? [])
-    .filter((match) => new Date(match.start_time) < todayStart)
-    .reverse();
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Partidos</h1>
         <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/matches/history"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-500 px-5 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/10"
+          >
+            Ver historial de partidos
+          </Link>
           <Link
             href="/admin/matches/week"
             className="inline-flex min-h-12 items-center justify-center rounded-xl border border-border px-5 text-sm font-semibold text-foreground hover:bg-surface-hover"
@@ -101,41 +102,21 @@ export default async function AdminMatchesPage() {
       <ShareWeekWhatsAppButton matches={weekMatches} />
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">
-          Próximos partidos ({upcomingMatches.length})
-        </h2>
-        {upcomingMatches.length > 0 ? (
-          upcomingMatches.map((match) => (
-            <MatchListItem
-              key={match.id}
-              match={match}
-              players={playersByMatch.get(match.id) ?? []}
-              namesById={namesById}
-            />
-          ))
-        ) : (
+        {(matches ?? []).map((match) => (
+          <MatchListItem
+            key={match.id}
+            match={match}
+            players={playersByMatch.get(match.id) ?? []}
+            namesById={namesById}
+          />
+        ))}
+
+        {(matches ?? []).length === 0 && (
           <p className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">
             No hay partidos programados todavía.
           </p>
         )}
       </div>
-
-      {pastMatches.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-muted-foreground">
-            Partidos pasados ({pastMatches.length})
-          </h2>
-          {pastMatches.map((match) => (
-            <MatchListItem
-              key={match.id}
-              match={match}
-              players={playersByMatch.get(match.id) ?? []}
-              namesById={namesById}
-              muted
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -144,21 +125,15 @@ function MatchListItem({
   match,
   players,
   namesById,
-  muted = false,
 }: {
   match: AdminMatch;
   players: AdminMatchPlayer[];
   namesById: Map<string, string>;
-  muted?: boolean;
 }) {
   const start = new Date(match.start_time);
 
   return (
-    <div
-      className={`space-y-4 rounded-2xl border border-border bg-surface p-4 ${
-        muted ? "opacity-70" : ""
-      }`}
-    >
+    <div className="space-y-4 rounded-2xl border border-border bg-surface p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-semibold">
