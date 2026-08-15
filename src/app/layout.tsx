@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import { BottomNav } from "@/components/bottom-nav";
+import { Header } from "@/components/header";
 import { NotificationsListener } from "@/components/notifications-listener";
 
 const geistSans = Geist({
@@ -18,6 +19,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Padel Club",
   description: "Organiza y apúntate a partidos de pádel del club.",
+  applicationName: "Pádel Club",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Pádel Club",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0f0d",
+  colorScheme: "dark",
 };
 
 export default async function RootLayout({
@@ -49,13 +62,11 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <meta name="color-scheme" content="dark" />
-      </head>
       <body
         className={`min-h-full flex flex-col ${user ? "pb-20" : ""}`}
         suppressHydrationWarning
       >
+        <Header />
         {children}
         {user && (
           <>

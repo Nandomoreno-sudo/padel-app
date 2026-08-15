@@ -13,8 +13,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Padel Club";
   const options = {
     body: data.body || "",
-    icon: "/icon.svg",
-    badge: "/icon.svg",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
     // silent defaults to false, which is what triggers the system's
     // native notification sound; vibrate covers the equivalent on mobile.
     silent: false,
