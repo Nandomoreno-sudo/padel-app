@@ -1,7 +1,15 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getMadridDayStart } from "@/lib/madrid-time";
 import { MatchCard } from "@/components/match-card";
 import { MatchesRealtimeListener } from "@/components/matches-realtime-listener";
+
+// Without these, Next/Vercel can serve a statically-cached render of this
+// page where `new Date()` was frozen at build/last-revalidation time,
+// keeping the "today" cutoff below stuck in the past instead of moving
+// forward on every request.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -13,8 +21,7 @@ export default async function HomePage() {
     redirect("/login");
   }
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStart = getMadridDayStart();
 
   const { data: matches } = await supabase
     .from("matches")

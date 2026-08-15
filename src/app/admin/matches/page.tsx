@@ -1,9 +1,27 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/supabase/dal";
+import { getMadridDayStart } from "@/lib/madrid-time";
 import { Avatar } from "@/components/avatar";
 import { SlotsBadge } from "@/components/match-badges";
 import { ShareWhatsAppButton } from "./share-whatsapp-button";
 import { ShareWeekWhatsAppButton } from "./share-week-whatsapp-button";
+
+type AdminMatch = {
+  id: string;
+  court_name: string;
+  start_time: string;
+  duration_minutes: number;
+  min_level: number | null;
+  max_level: number | null;
+  status: string;
+};
+
+type AdminMatchPlayer = {
+  match_id: string;
+  user_id: string;
+  team: 1 | 2;
+  confirmed_attendance: boolean;
+};
 
 export default async function AdminMatchesPage() {
   const { supabase } = await requireAdmin();
@@ -52,6 +70,14 @@ export default async function AdminMatchesPage() {
     return match.status !== "cancelled" && start >= now && start <= weekFromNow;
   });
 
+  const todayStart = getMadridDayStart(now);
+  const upcomingMatches = (matches ?? []).filter(
+    (match) => new Date(match.start_time) >= todayStart,
+  );
+  const pastMatches = (matches ?? [])
+    .filter((match) => new Date(match.start_time) < todayStart)
+    .reverse();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -75,91 +101,125 @@ export default async function AdminMatchesPage() {
       <ShareWeekWhatsAppButton matches={weekMatches} />
 
       <div className="space-y-4">
-        {(matches ?? []).map((match) => {
-          const matchPlayers = playersByMatch.get(match.id) ?? [];
-          const start = new Date(match.start_time);
-
-          return (
-            <div
+        <h2 className="text-lg font-semibold">
+          Próximos partidos ({upcomingMatches.length})
+        </h2>
+        {upcomingMatches.length > 0 ? (
+          upcomingMatches.map((match) => (
+            <MatchListItem
               key={match.id}
-              className="space-y-4 rounded-2xl border border-border bg-surface p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold">
-                    {start.toLocaleDateString("es-ES", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}{" "}
-                    ·{" "}
-                    {start.toLocaleTimeString("es-ES", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}{" "}
-                    · {match.court_name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {match.duration_minutes} min · Nivel{" "}
-                    {match.min_level !== null && match.max_level !== null
-                      ? `${match.min_level} - ${match.max_level}`
-                      : "todos"}
-                  </p>
-                </div>
-                <SlotsBadge
-                  status={match.status}
-                  playerCount={matchPlayers.length}
-                />
-              </div>
-
-              <div>
-                <p className="text-sm font-medium">
-                  Apuntados ({matchPlayers.length}/4)
-                </p>
-                {matchPlayers.length > 0 ? (
-                  <ul className="mt-2 flex flex-wrap gap-2">
-                    {matchPlayers.map((player) => (
-                      <li
-                        key={player.user_id}
-                        className="flex items-center gap-2 rounded-full border border-border bg-background/40 py-1 pl-1 pr-3 text-sm"
-                      >
-                        <Avatar
-                          name={namesById.get(player.user_id)}
-                          seed={player.user_id}
-                          size="sm"
-                        />
-                        <span>
-                          {namesById.get(player.user_id) ?? "Sin nombre"} ·
-                          equipo {player.team}
-                          {player.confirmed_attendance ? " · ✓" : ""}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Nadie se ha apuntado todavía.
-                  </p>
-                )}
-              </div>
-
-              <ShareWhatsAppButton
-                matchId={match.id}
-                courtName={match.court_name}
-                startTime={match.start_time}
-                minLevel={match.min_level}
-                maxLevel={match.max_level}
-              />
-            </div>
-          );
-        })}
-
-        {(matches ?? []).length === 0 && (
+              match={match}
+              players={playersByMatch.get(match.id) ?? []}
+              namesById={namesById}
+            />
+          ))
+        ) : (
           <p className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">
-            Todavía no se ha creado ningún partido.
+            No hay partidos programados todavía.
           </p>
         )}
       </div>
+
+      {pastMatches.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-muted-foreground">
+            Partidos pasados ({pastMatches.length})
+          </h2>
+          {pastMatches.map((match) => (
+            <MatchListItem
+              key={match.id}
+              match={match}
+              players={playersByMatch.get(match.id) ?? []}
+              namesById={namesById}
+              muted
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MatchListItem({
+  match,
+  players,
+  namesById,
+  muted = false,
+}: {
+  match: AdminMatch;
+  players: AdminMatchPlayer[];
+  namesById: Map<string, string>;
+  muted?: boolean;
+}) {
+  const start = new Date(match.start_time);
+
+  return (
+    <div
+      className={`space-y-4 rounded-2xl border border-border bg-surface p-4 ${
+        muted ? "opacity-70" : ""
+      }`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="font-semibold">
+            {start.toLocaleDateString("es-ES", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}{" "}
+            ·{" "}
+            {start.toLocaleTimeString("es-ES", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
+            · {match.court_name}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {match.duration_minutes} min · Nivel{" "}
+            {match.min_level !== null && match.max_level !== null
+              ? `${match.min_level} - ${match.max_level}`
+              : "todos"}
+          </p>
+        </div>
+        <SlotsBadge status={match.status} playerCount={players.length} />
+      </div>
+
+      <div>
+        <p className="text-sm font-medium">Apuntados ({players.length}/4)</p>
+        {players.length > 0 ? (
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {players.map((player) => (
+              <li
+                key={player.user_id}
+                className="flex items-center gap-2 rounded-full border border-border bg-background/40 py-1 pl-1 pr-3 text-sm"
+              >
+                <Avatar
+                  name={namesById.get(player.user_id)}
+                  seed={player.user_id}
+                  size="sm"
+                />
+                <span>
+                  {namesById.get(player.user_id) ?? "Sin nombre"} · equipo{" "}
+                  {player.team}
+                  {player.confirmed_attendance ? " · ✓" : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Nadie se ha apuntado todavía.
+          </p>
+        )}
+      </div>
+
+      <ShareWhatsAppButton
+        matchId={match.id}
+        courtName={match.court_name}
+        startTime={match.start_time}
+        minLevel={match.min_level}
+        maxLevel={match.max_level}
+      />
     </div>
   );
 }
