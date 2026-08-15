@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { LevelBadge } from "@/components/level-badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ export function MatchActions({
   joinBlockedReason,
   initialTeam,
   initialPosition,
+  headerContent,
 }: {
   matchId: string;
   team1: MatchPlayer[];
@@ -53,6 +54,7 @@ export function MatchActions({
   joinBlockedReason: string | null;
   initialTeam: 1 | 2 | null;
   initialPosition: Position | null;
+  headerContent?: ReactNode;
 }) {
   const [joinState, joinAction, joinPending] = useActionState(
     joinMatch.bind(null, matchId),
@@ -88,13 +90,16 @@ export function MatchActions({
 
   return (
     <div className="space-y-3">
-      <Court
-        team1={team1}
-        team2={team2}
-        selectable={canJoin}
-        selected={effectiveSelected}
-        onSelect={setSelected}
-      />
+      <div className="space-y-4 rounded-2xl border border-border bg-surface p-4">
+        {headerContent}
+        <Court
+          team1={team1}
+          team2={team2}
+          selectable={canJoin}
+          selected={effectiveSelected}
+          onSelect={setSelected}
+        />
+      </div>
 
       {registration && (
         <div className="space-y-3">
@@ -295,7 +300,7 @@ function EmptySlotCard({
 }) {
   if (!selectable) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border p-3 text-center text-muted-foreground">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-surface/80 p-3 text-center text-muted-foreground">
         <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed border-border text-lg leading-none">
           +
         </span>
@@ -311,7 +316,7 @@ function EmptySlotCard({
       className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-3 text-center transition-colors ${
         isSelected
           ? "border-emerald-500 bg-emerald-500/10 text-emerald-300"
-          : "border-border text-muted-foreground hover:border-emerald-400/60 hover:text-emerald-300/80"
+          : "border-border bg-surface/80 text-muted-foreground hover:border-emerald-400/60 hover:text-emerald-300/80"
       }`}
     >
       <span className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed border-current text-lg leading-none">

@@ -95,40 +95,6 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-4 py-6 pb-8">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">{match.court_name}</h1>
-          <MatchStatusBadge status={match.status} />
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {formatMatchDate(startDate)} ·{" "}
-          {startDate.toLocaleTimeString("es-ES", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
-          · {match.duration_minutes} min
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Nivel:{" "}
-          {match.min_level !== null && match.max_level !== null
-            ? `${match.min_level} - ${match.max_level}`
-            : "Todos los niveles"}
-        </p>
-      </div>
-
-      {profile?.is_admin && (
-        <div className="space-y-3">
-          <NotifyWhatsAppButton
-            matchId={match.id}
-            courtName={match.court_name}
-            startTime={match.start_time}
-            playerCount={playerList.length}
-            status={match.status}
-          />
-          <DeleteMatchButton matchId={match.id} />
-        </div>
-      )}
-
       <MatchActions
         matchId={match.id}
         team1={team1}
@@ -144,7 +110,42 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
         joinBlockedReason={joinBlockedReason}
         initialTeam={initialTeam}
         initialPosition={initialPosition}
+        headerContent={
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="text-2xl font-bold">{match.court_name}</h1>
+              <MatchStatusBadge status={match.status} />
+            </div>
+            <p className="text-sm text-zinc-300">
+              {formatMatchDate(startDate)} ·{" "}
+              {startDate.toLocaleTimeString("es-ES", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              · {match.duration_minutes} min
+            </p>
+            <p className="text-sm text-zinc-300">
+              Nivel:{" "}
+              {match.min_level !== null && match.max_level !== null
+                ? `${match.min_level} - ${match.max_level}`
+                : "Todos los niveles"}
+            </p>
+          </div>
+        }
       />
+
+      {profile?.is_admin && (
+        <div className="space-y-3">
+          <NotifyWhatsAppButton
+            matchId={match.id}
+            courtName={match.court_name}
+            startTime={match.start_time}
+            playerCount={playerList.length}
+            status={match.status}
+          />
+          <DeleteMatchButton matchId={match.id} />
+        </div>
+      )}
 
       {registration && (
         <AddToCalendarButton

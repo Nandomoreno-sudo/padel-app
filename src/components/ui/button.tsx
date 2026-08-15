@@ -7,7 +7,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   secondary:
     "border border-border text-foreground hover:bg-surface-hover active:bg-surface-hover",
   danger:
-    "border border-red-500/30 text-red-400 hover:bg-red-500/10 active:bg-red-500/10",
+    "border border-red-800/60 bg-red-950/40 text-red-400 hover:bg-red-950/60 active:bg-red-950/60",
 };
 
 // min-h-12 (48px) keeps every button comfortably tappable with a thumb.
