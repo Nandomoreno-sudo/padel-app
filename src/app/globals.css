@@ -31,10 +31,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Club background photo, dimmed and muted behind the UI so surface cards
-   (bg-surface, already opaque) and loose text stay legible. Rendered on a
-   fixed pseudo-element instead of `background-attachment: fixed` because
-   iOS Safari doesn't support fixed body backgrounds. */
+/* Club background photo, lightly dimmed behind the UI so the photo reads
+   clearly while surface cards (bg-surface, already opaque) and loose text
+   stay legible. Rendered on a fixed pseudo-element instead of
+   `background-attachment: fixed` because iOS Safari doesn't support fixed
+   body backgrounds. */
 body::before {
   content: "";
   position: fixed;
@@ -42,14 +43,14 @@ body::before {
   z-index: -1;
   background-image: linear-gradient(
       180deg,
-      rgba(10, 15, 13, 0.86) 0%,
-      rgba(10, 15, 13, 0.92) 100%
+      rgba(10, 15, 13, 0.38) 0%,
+      rgba(10, 15, 13, 0.45) 100%
     ),
     url("/background.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(14px) saturate(0.55) brightness(0.75);
+  filter: blur(1px);
 }
 
 /* Inputs at 16px+ prevent iOS Safari's auto-zoom on focus. */
