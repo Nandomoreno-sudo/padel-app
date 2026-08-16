@@ -3,16 +3,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { normalizePhone } from "@/lib/phone";
-import { LEVEL_OPTIONS } from "./level-options";
 
 export type RegisterActionState = {
   error?: string;
   message?: string;
 };
-
-const VALID_LEVEL_VALUES = new Set<string>(
-  LEVEL_OPTIONS.map((o) => o.value),
-);
 
 export async function register(
   _prevState: RegisterActionState,
@@ -28,14 +23,9 @@ export async function register(
   const phone = rawPhone ? normalizePhone(rawPhone) : null;
   const email = formData.get("email")?.toString().trim();
   const password = formData.get("password")?.toString();
-  const level = formData.get("level")?.toString().trim();
 
-  if (!invitationCode || !name || !email || !password || !level) {
+  if (!invitationCode || !name || !email || !password) {
     return { error: "Completa todos los campos obligatorios." };
-  }
-
-  if (!VALID_LEVEL_VALUES.has(level)) {
-    return { error: "Selecciona un nivel válido." };
   }
 
   if (password.length < 8) {
@@ -75,7 +65,6 @@ export async function register(
         invitation_code: invitationCode,
         name,
         phone,
-        level,
       },
     },
   });

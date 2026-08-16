@@ -1,14 +1,15 @@
--- Reads the self-declared level (src/app/register/level-options.ts) from
--- the sign-up metadata and uses it as the new profile's starting level,
--- instead of always falling back to the profiles.level column default of
--- 2.5. Falls back to 2.5 itself when no level was passed in metadata (e.g.
--- accounts provisioned some other way than the register form).
+-- Reads an optional self-declared level from the sign-up metadata and uses
+-- it as the new profile's starting level, instead of always falling back to
+-- the profiles.level column default of 2.5. The register form
+-- (src/app/register/actions.ts) no longer sends a level, so every new
+-- profile is created at the 2.5 default via this same coalesce fallback;
+-- the metadata path stays in place for accounts provisioned some other way.
 --
--- Expects the level (in addition to invitation_code/name/phone, already
--- handled by 02_auth_trigger.sql) as user metadata on signUp:
+-- Expects invitation_code/name/phone as user metadata on signUp (handled by
+-- 02_auth_trigger.sql), with an optional level:
 --   supabase.auth.signUp({
 --     email, password,
---     options: { data: { invitation_code, name, phone, level } },
+--     options: { data: { invitation_code, name, phone } },
 --   })
 
 create or replace function public.handle_new_user()
