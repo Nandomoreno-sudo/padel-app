@@ -82,16 +82,20 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
     ((match.min_level !== null && level < match.min_level) ||
       (match.max_level !== null && level > match.max_level));
 
+  const startDate = new Date(match.start_time);
+  const hasStarted = startDate <= new Date();
+
   let joinBlockedReason: string | null = null;
   if (match.status !== "open") {
     joinBlockedReason = "Este partido no admite más inscripciones.";
+  } else if (hasStarted) {
+    joinBlockedReason =
+      "El partido ya ha comenzado y no admite más inscripciones.";
   } else if (levelOutOfRange) {
     joinBlockedReason = `Tu nivel (${level}) no está dentro del rango permitido (${match.min_level ?? "—"} - ${match.max_level ?? "—"}).`;
   } else if (team1.length >= 2 && team2.length >= 2) {
     joinBlockedReason = "El partido está completo.";
   }
-
-  const startDate = new Date(match.start_time);
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 space-y-6 px-4 py-6 pb-8">
@@ -114,7 +118,10 @@ export default async function MatchPage(props: PageProps<"/matches/[id]">) {
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <h1 className="text-2xl font-bold">{match.court_name}</h1>
-              <MatchStatusBadge status={match.status} />
+              <MatchStatusBadge
+                status={match.status}
+                startTime={match.start_time}
+              />
             </div>
             <p className="text-sm text-zinc-300">
               {formatMatchDate(startDate)} ·{" "}

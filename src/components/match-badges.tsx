@@ -14,7 +14,32 @@ const STATUS_TONES: Record<string, string> = {
   cancelled: "bg-red-500/10 text-red-400/70",
 };
 
-export function MatchStatusBadge({ status }: { status: string }) {
+// A match is still "open" in the DB (nobody filled the last slot) but its
+// start time has already passed, so it can no longer accept sign-ups even
+// though a status transition never fired for it.
+export function isMatchExpired(status: string, startTime: string): boolean {
+  return status === "open" && new Date(startTime) <= new Date();
+}
+
+function ClosedBadge() {
+  return (
+    <span className="inline-flex items-center whitespace-nowrap rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+      Cerrado / En curso
+    </span>
+  );
+}
+
+export function MatchStatusBadge({
+  status,
+  startTime,
+}: {
+  status: string;
+  startTime?: string;
+}) {
+  if (startTime && isMatchExpired(status, startTime)) {
+    return <ClosedBadge />;
+  }
+
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_TONES[status] ?? "bg-white/10 text-muted-foreground"}`}
@@ -31,10 +56,16 @@ export function MatchStatusBadge({ status }: { status: string }) {
 export function SlotsBadge({
   status,
   playerCount,
+  startTime,
 }: {
   status: string;
   playerCount: number;
+  startTime?: string;
 }) {
+  if (startTime && isMatchExpired(status, startTime)) {
+    return <ClosedBadge />;
+  }
+
   if (status !== "open" && status !== "full") {
     return <MatchStatusBadge status={status} />;
   }

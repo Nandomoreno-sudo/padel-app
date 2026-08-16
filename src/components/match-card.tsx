@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "./avatar";
-import { SlotsBadge } from "./match-badges";
+import { SlotsBadge, isMatchExpired } from "./match-badges";
 import { formatMatchDate } from "@/lib/format-date";
 
 type Position = "derecha" | "reves";
@@ -45,7 +45,10 @@ export function MatchCard({
   const start = new Date(match.start_time);
   const team1 = players.filter((p) => p.team === 1);
   const team2 = players.filter((p) => p.team === 2);
-  const joinable = match.status === "open" && players.length < 4;
+  const joinable =
+    match.status === "open" &&
+    players.length < 4 &&
+    !isMatchExpired(match.status, match.start_time);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-4 transition-colors">
@@ -65,7 +68,11 @@ export function MatchCard({
               })}
             </p>
           </div>
-          <SlotsBadge status={match.status} playerCount={players.length} />
+          <SlotsBadge
+            status={match.status}
+            playerCount={players.length}
+            startTime={match.start_time}
+          />
         </div>
 
         <div className="mt-3 flex flex-row flex-wrap items-center gap-3 text-sm">

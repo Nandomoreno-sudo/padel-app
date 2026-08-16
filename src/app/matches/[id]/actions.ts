@@ -52,6 +52,11 @@ export async function joinMatch(
   if (!match) {
     return { error: "El partido no existe." };
   }
+  if (new Date(match.start_time) <= new Date()) {
+    return {
+      error: "El partido ya ha comenzado y no admite más inscripciones.",
+    };
+  }
   if (match.status !== "open") {
     return { error: "Este partido no admite más inscripciones." };
   }
