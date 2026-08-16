@@ -109,9 +109,7 @@ export async function joinMatch(
   // "Other players already in the match" is exactly the `players` list
   // fetched above (before this insert) — no need to re-query it.
   const targetUserIds = players.map((p) => p.user_id);
-  if (targetUserIds.length === 0) {
-    console.log("[joinMatch] no other players to notify for match", matchId);
-  } else {
+  if (targetUserIds.length > 0) {
     const { data: pushSubs, error: pushSubsError } = await supabase.rpc(
       "get_match_push_subscriptions",
       { p_match_id: matchId, p_user_ids: targetUserIds },
@@ -122,33 +120,18 @@ export async function joinMatch(
         matchId,
         pushSubsError,
       );
-    } else if (!pushSubs || pushSubs.length === 0) {
-      console.log(
-        "[joinMatch] no push subscriptions to notify for match",
-        matchId,
-      );
-    } else {
-      console.log(
-        `[joinMatch] sending push to ${pushSubs.length} subscription(s) for match`,
-        matchId,
-      );
+    } else if (pushSubs && pushSubs.length > 0) {
       const staleEndpoints = await sendPushNotifications(pushSubs, {
         title: "🎾 Nuevo jugador en tu partido",
         body: message,
         url: `/matches/${matchId}`,
       });
-      if (staleEndpoints.length > 0) {
-        console.log(
-          `[joinMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
-        );
-      }
       await deleteStaleSubscriptions(supabase, staleEndpoints);
     }
   }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/");
-  revalidatePath("/matches");
   return {};
 }
 
@@ -173,7 +156,11 @@ export async function leaveMatch(
   const [{ data: profile }, { data: match }, { data: otherPlayers, error: otherPlayersError }] =
     await Promise.all([
       supabase.from("profiles").select("name").eq("id", user.id).single(),
-      supabase.from("matches").select("start_time").eq("id", matchId).single(),
+      supabase
+        .from("matches")
+        .select("status, start_time")
+        .eq("id", matchId)
+        .single(),
       supabase
         .from("match_players")
         .select("user_id")
@@ -186,6 +173,15 @@ export async function leaveMatch(
       matchId,
       otherPlayersError,
     );
+  }
+
+  // Mirrors joinMatch's status gate: once the match is full or a result
+  // has been submitted/finished, match_players rows are part of the
+  // roster/level-calculation record and must not change under it.
+  if (match && match.status !== "open") {
+    return {
+      error: "No puedes salirte de este partido en su estado actual.",
+    };
   }
 
   const targetUserIds = otherPlayers?.map((p) => p.user_id) ?? [];
@@ -221,36 +217,17 @@ export async function leaveMatch(
     match ? ` a tu partido del ${formatMatchDate(match.start_time)}` : " a tu partido"
   }.`;
 
-  if (targetUserIds.length === 0) {
-    console.log("[leaveMatch] no other players to notify for match", matchId);
-  } else if (pushSubsError) {
-    // already logged above; nothing to send.
-  } else if (!pushSubs || pushSubs.length === 0) {
-    console.log(
-      "[leaveMatch] no push subscriptions to notify for match",
-      matchId,
-    );
-  } else {
-    console.log(
-      `[leaveMatch] sending push to ${pushSubs.length} subscription(s) for match`,
-      matchId,
-    );
+  if (targetUserIds.length > 0 && !pushSubsError && pushSubs && pushSubs.length > 0) {
     const staleEndpoints = await sendPushNotifications(pushSubs, {
       title: "🎾 Un jugador se ha bajado del partido",
       body: message,
       url: `/matches/${matchId}`,
     });
-    if (staleEndpoints.length > 0) {
-      console.log(
-        `[leaveMatch] removing ${staleEndpoints.length} stale push subscription(s)`,
-      );
-    }
     await deleteStaleSubscriptions(supabase, staleEndpoints);
   }
 
   revalidatePath(`/matches/${matchId}`);
   revalidatePath("/");
-  revalidatePath("/matches");
   return {};
 }
 

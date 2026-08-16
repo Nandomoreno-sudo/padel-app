@@ -18,7 +18,11 @@ export async function register(
   _prevState: RegisterActionState,
   formData: FormData,
 ): Promise<RegisterActionState> {
-  const invitationCode = formData.get("invitationCode")?.toString().trim();
+  const invitationCode = formData
+    .get("invitationCode")
+    ?.toString()
+    .trim()
+    .toUpperCase();
   const name = formData.get("name")?.toString().trim();
   const rawPhone = formData.get("phone")?.toString().trim();
   const phone = rawPhone ? normalizePhone(rawPhone) : null;
